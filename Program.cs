@@ -1,16 +1,38 @@
 using ContactProMVC.Data;
+using ContactProMVC.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
-var builder = WebApplication.CreateBuilder(args);
+//SQL Connection
+var dbConnection = "sqlConnection";
 
+//PostgreSQL Connection
+//var dbConnection = "pgConnection";
+
+var connectionString = "";
+
+var builder = WebApplication.CreateBuilder(args);
+ 
 // Add services to the container.
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
+
+if (dbConnection == "sqlConnection")
+{
+    connectionString = builder.Configuration.GetSection("sqlSettings")["sqlConnection"];
+
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
+}
+else if (dbConnection == "pgConnection")
+{
+    connectionString = builder.Configuration.GetSection("pgSettings")["pgConnection"];
+
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(connectionString));
+}
+
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+builder.Services.AddDefaultIdentity<AppUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
 
